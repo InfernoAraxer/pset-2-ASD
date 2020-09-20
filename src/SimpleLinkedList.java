@@ -7,8 +7,7 @@ public class SimpleLinkedList {
 	public static int size;
 	
 	public SimpleLinkedList() {
-		data = new String[1];
-		data[0] = "";
+		data = new String[0];
 		size = 0;
 	}
 	
@@ -21,9 +20,7 @@ public class SimpleLinkedList {
 	}
 	
 	public static void main(String[] args) {
-		SimpleLinkedList test = new SimpleLinkedList();
-		test.addFirst("Shit");
-		System.out.println(test);
+
 	}
 	
 	
@@ -70,9 +67,8 @@ public class SimpleLinkedList {
 	}
 	
 	public void clear () {
-		data = new String[1]; 
+		data = new String[0]; 
 		size = 0;
-		data[0] = "";
 		}
 	
 	public boolean contains (String s) {
@@ -206,14 +202,18 @@ public class SimpleLinkedList {
 	
 	public String toString () {
 		String concat = "[";
-		for (int x = 0; x < data.length; x++) {
-			if (data[x] != null) {
-				concat += data[x];
-				concat += ", ";
+		if (size == 0) {
+			return "[]";
+		} else {
+			for (int x = 0; x < data.length; x++) {
+				if (data[x] != null) {
+					concat += data[x];
+					concat += ", ";
+				}
 			}
+			concat = concat.substring(0,concat.length()-2);
+			return concat += "]";
 		}
-		concat = concat.substring(0,concat.length()-2);
-		return concat += "]";
 	}
  }
  
