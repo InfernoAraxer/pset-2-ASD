@@ -6,16 +6,27 @@ public class SimpleLinkedList {
 	public static String[] data;
 	public static int size;
 	
+	private static Node head;
+	private static Node tail;
+	
 	public SimpleLinkedList() {
-		data = new String[0];
+		head = null;
+		tail = null;
 		size = 0;
 	}
 	
 	public SimpleLinkedList(List<String> list) {
-		data = new String[list.size()];
+		head = new Node (null, null, null);
+		tail = new Node (null, null, null);
+		Node currentNode = head;
 		for (int x = 0; x < list.size(); x++) {
-			data[x] = list.get(x);
+			currentNode.data = list.get(x);
+			Node prevNode = currentNode;
+			currentNode = new Node (currentNode, null, null);
+			prevNode.next = currentNode;
 		}
+		currentNode.data = list.get(list.size()-1);
+		tail = currentNode;
 		size = list.size();
 	}
 	
@@ -25,55 +36,55 @@ public class SimpleLinkedList {
 	
 	
 	public void add (int index, String s) {
-		String[] temp = new String[size+1];
 		if (index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+		}
+		if (index == 0) {
+			addFirst(s);
+		} else if (index == size - 1) {
+			addLast(s);
 		} else {
-			for (int x = 0; x <= size; x++) {
-				if (x == index) {
-					temp[x] = s;
-				} else if (x < index) {
-					temp[x] = data[x];
-				} else {
-					temp[x] = data[x-1];
-				}
-			}
-			data = new String[size+1];
-			data = temp;
+			Node currentNode = getNode(index);
+			Node newNode = new Node (currentNode.prev, s, currentNode);
+			currentNode.prev.next = newNode;
+			currentNode.prev = newNode;
 			size++;
 		}
 	}
-	
+
 	public void addFirst (String s) {
-		String[] temp = new String[size+1];
-		temp[0] = s;
-		for (int x = 0; x < size; x++) { 
-			temp[x+1] = data[x];
+		Node currentNode = head;
+		Node newNode = new Node (null, s, currentNode);
+		head = newNode;
+		if (size == 0) {
+			tail = newNode;
+		} else {
+			currentNode.prev = newNode;
 		}
-		data = new String[size+1];
-		data = temp;
 		size++;
 	}
 	
 	public void addLast (String s) {
-		String[] temp = new String[size+1];
-		for(int x = 0; x < size; x++) {
-			temp[x] = data[x];
+		Node currentNode = tail;
+		Node newNode = new Node (currentNode, s, null);
+		tail = newNode;
+		if (size == 0) {
+			head = newNode;
+		} else {
+			currentNode.next = newNode;
 		}
-		temp[size] = s;
-		data = new String[size+1];
-		data = temp;
 		size++;
 	}
 	
 	public void clear () {
-		data = new String[0]; 
+		head = new Node (null, null, null);
+		tail = new Node (null, null, null);
 		size = 0;
 		}
 	
 	public boolean contains (String s) {
 		for(int x = 0; x < size; x++) {
-			if (data[x] == s) {
+			if (getNode(x).data == s) {
 				return true;
 			}
 		}
@@ -84,26 +95,26 @@ public class SimpleLinkedList {
 		if (index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
-		return data[index];
+		return getNode(index).data;
 	}
 	
 	public String getFirst () {
 		if (size == 0) {
 			throw new NoSuchElementException();
 		}
-		return data[0];
+		return head.data;
 	}
 	
 	public String getLast () {
 		if (size == 0) {
 			throw new NoSuchElementException();
 		}
-		return data[size-1];
+		return tail.data;
 	}
 	
 	public int indexOf (String s) {
-		for (int x = 0; x < size; x++) {
-			if (data[x] == s) {
+		for(int x = 0; x < size; x++) {
+			if (getNode(x).data == s) {
 				return x;
 			}
 		}
@@ -111,76 +122,59 @@ public class SimpleLinkedList {
 	}
 	
 	public String remove (int index) {
-		String[] temp = new String[size - 1];
-		String removed = null;
 		if (index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+		} else if (index == 0) {
+			return removeFirst();
+		} else if (index == size - 1) {
+			return removeLast();
 		} else {
-			for (int x = 0; x < size; x++) {
-				if (x == index) {
-					removed = data[index];
-				} else if (x < index) {
-					temp[x] = data[x];
-				} else {
-					temp[x-1] = data[x];
-				}
-			}
-			data = new String[size-1];
-			data = temp;
+			Node removedNode = getNode(index);
+			removedNode.prev.next = removedNode.next;
+			removedNode.next.prev = removedNode.prev;
+			String removed = removedNode.data;
 			size--;
 			return removed;
 		}
 	}
 	
 	public boolean remove (String s) {
-		boolean removed = false;
-		int index = -1;
-		for(int x = 0; x < size; x++) {
-			if (data[x] == s) {
-				removed = true;
-				index = x;
-			}
-		}
-		if (removed == true) {
-			String[] temp = new String[size-1];
-			for (int x = 0; x < size; x++) {
-				if (x < index) { 
-					temp[x] = data[x];
-				} else if (x >= index) {
-					temp[x] = data[x+1];
-				}
-			}
-			data = new String[size-1];
-			data = temp;
-			size--;
-			return removed;
+		boolean isFound = contains(s);
+		if (isFound == false) {
+			return false;
 		} else {
-			return removed;
+			int index = indexOf(s);
+			if (index == 0) {
+				removeFirst();
+				return true;
+			} else if (index == size) {
+				removeLast();
+				return true;
+			} else {
+				Node removedNode = getNode(index);
+				removedNode.prev.next = removedNode.next;
+				removedNode.next.prev = removedNode.prev;
+				size--;
+				return true;
+			}
 		}
-		
 	}
 	
 	public String removeFirst () {
-		String removed = data[0];
-		String[] temp = new String[size-1];
-		for (int x = 0; x < size-1; x++) {
-			temp[x] = data[x+1];
-		}
+		String removed = head.data;
+		Node removedNode = head;
+		head = removedNode.next;
+		head.prev = null;
 		size--;
-		data = new String[size-1];
-		data = temp;
 		return removed;
 	}
 	
 	public String removeLast () {
-		String removed = data[size-1];
-		String[] temp = new String[size-1];
-		for (int x = 0; x < size-1; x++ ) {
-			temp[x] = data[x];
-		}
+		String removed = tail.data;
+		Node removedNode = tail;
+		tail = removedNode.prev;
+		tail.next = null;
 		size--;
-		data = new String[size-1];
-		data = temp;
 		return removed;
 	}
 	
@@ -188,11 +182,10 @@ public class SimpleLinkedList {
 		if (index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
-		String replaced = data[index];
-		if (s == null) {
-			s = "null";
-		}
-		data[index] = s;
+		Node currentNode = getNode(index);
+		String replaced = currentNode.data;
+		if (s == null) s = "null";
+		currentNode.data = s;
 		return replaced;
 	}
 	
@@ -202,17 +195,37 @@ public class SimpleLinkedList {
 	
 	public String toString () {
 		String concat = "[";
-		if (size == 0) {
-			return "[]";
-		} else {
-			for (int x = 0; x < data.length; x++) {
-				if (data[x] != null) {
-					concat += data[x];
-					concat += ", ";
-				}
+		Node currentNode = head;
+		if (size != 0) {
+			for (int x = 0; x < size - 1; x++) {
+				concat += currentNode.data + ", ";
+				currentNode = currentNode.next;
 			}
-			concat = concat.substring(0,concat.length()-2);
-			return concat += "]";
+			concat += currentNode.data + "]";
+		} else {
+			return "[]";
+		}
+		return concat;
+	}
+	
+	public Node getNode(int index) {
+		Node currentNode = head;
+		for (int x = 0; x < index; x++) {
+			currentNode = currentNode.next;
+		}
+		return currentNode;
+	}
+	
+	public static class Node {
+		
+		Node prev;
+		String data;
+		Node next;
+		
+		public Node(Node prev, String data, Node next) {
+			this.prev = prev;
+			this.data = data;
+			this.next = next;
 		}
 	}
  }
